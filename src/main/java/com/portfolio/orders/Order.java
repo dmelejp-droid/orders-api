@@ -16,12 +16,16 @@ public class Order {
     
     private Long productId;
     private Integer quantity;
+    
+    // PENDING, APPROVED, REJECTED
+    private String status = "PENDING";
 
     public Order() {}
 
     public Order(Long productId, Integer quantity) {
         this.productId = productId;
         this.quantity = quantity;
+        this.status = "PENDING";
     }
 
     public Long getId() { return id; }
@@ -32,4 +36,7 @@ public class Order {
     
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
