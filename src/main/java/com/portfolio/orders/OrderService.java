@@ -3,6 +3,7 @@ package com.portfolio.orders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.kafka.core.KafkaTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OrderService {
@@ -11,15 +12,21 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private KafkaTemplate<Object, Object> kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public Order createOrder(Order order) {
         // 1. Guardamos la orden en nuestra base de datos local
         Order savedOrder = orderRepository.save(order);
 
-        // 2. Publicamos un evento en Kafka en vez de llamar al inventario por HTTP
-        // El tema (topic) se llamará "topic_compras"
-        kafkaTemplate.send("topic_compras", savedOrder);
+        // 2. Convertimos el objeto a String JSON usando Jackson y lo enviamos
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(savedOrder);
+            kafkaTemplate.send("topic_compras", jsonMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return savedOrder;
     }

@@ -28,11 +28,11 @@ public class SagaConsumer {
                 Order order = orderOpt.get();
                 order.setStatus(status); // APPROVED o REJECTED
                 orderRepository.save(order);
-                System.out.println("✅ [SAGA ORDERS] Orden " + orderId + " actualizada al estado: " + status);
+                System.out.println("[SAGA ORDERS] Orden " + orderId + " actualizada al estado: " + status);
             }
 
         } catch (Exception e) {
-            System.out.println("❌ [KAFKA] Error procesando respuesta SAGA: " + e.getMessage());
+            System.out.println("[KAFKA] Error procesando respuesta SAGA: " + e.getMessage());
         }
     }
 }
