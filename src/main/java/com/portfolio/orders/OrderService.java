@@ -15,23 +15,22 @@ public class OrderService {
 
     public Order createOrder(Order order) {
         
-        String inventoryUrl = "http://localhost:8080/api/products/" + order.getProductId();
+        // 1. Pedimos a Inventory-API descontar el stock
+        String inventoryUrl = "http://localhost:8080/api/products/" + order.getProductId() + "/deduct?quantity=" + order.getQuantity();
 
         try {
-            ProductDTO product = restTemplate.getForObject(inventoryUrl, ProductDTO.class);
+            // Hacemos una llamada PUT. Si el inventario no tiene stock, retornará error
+            restTemplate.put(inventoryUrl, null);
 
-            if (product == null) {
-                throw new RuntimeException("El producto no arrojó información.");
-            }
+            // 2. Si el inventario restó el stock exitosamente, guardamos la orden
+            return orderRepository.save(order);
 
-            if (product.getStock() >= order.getQuantity()) {
-                return orderRepository.save(order);
-            } else {
-                throw new RuntimeException("No hay suficiente stock para el producto: " + product.getName());
-            }
-
+        } catch (HttpClientErrorException.BadRequest e) {
+            throw new RuntimeException("Error: No hay suficiente stock para este producto.");
         } catch (HttpClientErrorException.NotFound e) {
-            throw new RuntimeException("Error: El producto con ID " + order.getProductId() + " no existe en el inventario.");
+            throw new RuntimeException("Error: El producto con ID " + order.getProductId() + " no existe.");
+        } catch (Exception e) {
+            throw new RuntimeException("Error de comunicación con el inventario.");
         }
     }
 }
